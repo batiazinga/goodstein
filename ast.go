@@ -1,6 +1,9 @@
 package main
 
-import "strconv"
+import (
+	"math/big"
+	"strconv"
+)
 
 // A simple AST for the hereditary base-n decomposition problem
 
@@ -27,6 +30,10 @@ type expr interface {
 	// iSubstitute replace all n-literals by m-literals.
 	// The original expr is affected (in-place substitution).
 	iSubstitute(n, m int)
+
+	// eval evaluates the AST.
+	// It returns a big int because huge numbers are expected.
+	eval() *big.Int
 }
 
 type operation int
@@ -53,6 +60,10 @@ func (l *literal) iSubstitute(n, m int) {
 	if l.value == n {
 		l.value = m
 	}
+}
+
+func (l *literal) eval() *big.Int {
+	return big.NewInt(int64(l.value))
 }
 
 type binary struct {
@@ -163,4 +174,20 @@ func (b *binary) clean() expr {
 func (b *binary) iSubstitute(n, m int) {
 	b.left.iSubstitute(n, m)
 	b.right.iSubstitute(n, m)
+}
+
+func (b *binary) eval() *big.Int {
+	switch b.op {
+
+	case sum:
+		return new(big.Int).Add(b.left.eval(), b.right.eval())
+
+	case prod:
+		return new(big.Int).Mul(b.left.eval(), b.right.eval())
+
+	case power:
+		return new(big.Int).Exp(b.left.eval(), b.right.eval(), nil)
+	}
+
+	return nil // this should never happen
 }
