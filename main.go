@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+
+	"github.com/batiazinga/goodstein/decomposition"
+)
 
 var inputs = []struct{ base, n int }{
 	{2, 5},
@@ -15,6 +20,10 @@ var inputs = []struct{ base, n int }{
 
 func main() {
 	for _, input := range inputs {
-		fmt.Printf("%v = %s\n", input.n, decompose(input.base, input.n).LaTeX())
+		d, err := decomposition.New(input.base, input.n)
+		if err != nil {
+			os.Exit(1)
+		}
+		fmt.Printf("%v = %s\n", d.Eval(), d.LaTeX())
 	}
 }
