@@ -194,7 +194,9 @@ func (d Decomposition) Eval() *big.Int {
 
 // IncrementBase replaces base b by b+1 in the decomposition.
 func (d Decomposition) IncrementBase() {
-	panic("TODO")
+	for _, m := range d {
+		m.base += 1
+	}
 }
 
 // RemoveOne symbolically removes one from the decomposition.
