@@ -15,12 +15,22 @@ type monome struct {
 	exponent    Decomposition
 }
 
+// copyMonome returns a deep copy (i.e. the exponent is also a copy)
+// of the original monome.
+func copyMonome(m *monome) *monome {
+	return &monome{
+		coeff:    m.coeff,
+		base:     m.base,
+		exponent: copyDecomposition(m.exponent),
+	}
+}
+
 // isZero returns true if the monome is equal to zero.
 func (m *monome) isZero() bool { return m.coeff == 0 }
 
 // isOne returns true if the monome is equal to one.
 func (m *monome) isOne() bool {
-	return m.coeff == 1 && m.exponent.isZero()
+	return m.coeff == 1 && m.exponent.IsZero()
 }
 
 // string is helper for the String and LaTeX methods.
@@ -39,7 +49,7 @@ func (m *monome) string(times, leftGroup, rightGroup string) string {
 	times = " " + times + " "
 
 	switch {
-	case m.exponent.isZero():
+	case m.exponent.IsZero():
 		// base ^ exponent is one, so monome is equal to its coeff
 		return strCoeff
 
@@ -113,10 +123,19 @@ func recDecompose(b, n, k int) Decomposition {
 	return append(singleton, recDecompose(b, n/b, k+1)...)
 }
 
-// isZero returns true if the decomposition is the decomposition of 0 (in any base).
+// copyDecomposition returns a deep copy of the decomposition.
+func copyDecomposition(d Decomposition) Decomposition {
+	copied := make(Decomposition, 0, len(d))
+	for _, m := range d {
+		copied = append(copied, copyMonome(m))
+	}
+	return copied
+}
+
+// IsZero returns true if the decomposition is the decomposition of 0 (in any base).
 // This applies only to a cleaned decomposition.
-func (d Decomposition) isZero() bool {
-	return len(d) == 0 || (len(d) == 1 && d[0].coeff == 0)
+func (d Decomposition) IsZero() bool {
+	return len(d) == 0
 }
 
 // isOne returns true if the decomposition is the decomposition of 1 (in any base).
@@ -192,14 +211,52 @@ func (d Decomposition) Eval() *big.Int {
 	return result
 }
 
-// IncrementBase replaces base b by b+1 in the decomposition.
-func (d Decomposition) IncrementBase() {
+// IncrementBase returns a new Decomposition with base incremented by one.
+func IncrementBase(d Decomposition) Decomposition {
+	incremented := make(Decomposition, 0, len(d))
 	for _, m := range d {
-		m.base += 1
+		incremented = append(incremented, &monome{
+			coeff:    m.coeff,
+			base:     m.base + 1,
+			exponent: IncrementBase(copyDecomposition(m.exponent)),
+		})
 	}
+	return incremented
 }
 
-// RemoveOne symbolically removes one from the decomposition.
-func (d Decomposition) RemoveOne() {
-	panic("TODO")
+// Decrement returns a new Decomposition
+// which has been symbolically decremented.
+// If the decomposition is equal to zero, it returns the zero Decomposition
+func Decrement(d Decomposition) Decomposition {
+	// if decomposition is zero, return zero
+	if d.IsZero() {
+		return nil
+	}
+
+	// to be decremented
+	decremented := copyDecomposition(d)
+
+	// find the least significant monome
+	lsm := decremented[0]
+	// and decrease its coefficient by one
+	lsm.coeff -= 1
+
+	// append all monomes from this one to zero
+	// with coefficient (base-1).
+	exp := lsm.exponent
+	for !exp.IsZero() {
+		// decrease exponent
+		exp = Decrement(exp)
+
+		// new monome is the least significant one.
+		// prepend it
+		decremented = append([]*monome{&monome{
+			coeff:    lsm.base - 1,
+			base:     lsm.base,
+			exponent: copyDecomposition(exp),
+		}}, decremented...)
+	}
+
+	// clean the decomposition
+	return decremented.clean()
 }
