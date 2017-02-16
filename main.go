@@ -11,8 +11,9 @@ import (
 )
 
 var (
-	it    = flag.Int("it", 10, "maximum number of iterations")
-	latex = flag.Bool("latex", false, "if true, results are valid LaTeX commands")
+	it     = flag.Int("it", 10, "maximum number of iterations")
+	latex  = flag.Bool("latex", false, "if true, results are valid LaTeX commands")
+	header = flag.Bool("header", true, "if true, a header is displayed")
 )
 
 func main() {
@@ -53,8 +54,10 @@ func main() {
 		os.Exit(2)
 	}
 
-	// print header
-	fmt.Fprintln(os.Stdout, "iteration base value decomposition")
+	// print header (or not)
+	if *header {
+		fmt.Fprintln(os.Stdout, "iteration base value decomposition")
+	}
 
 	// start iterations
 	for i := 0; i < *it; i++ {
@@ -65,7 +68,7 @@ func main() {
 		} else {
 			strDecomposition = d.String()
 		}
-		fmt.Fprintf(os.Stdout, "%v %v %v %s\n", i, b, d.Eval(), strDecomposition)
+		fmt.Fprintf(os.Stdout, "%v %v %v %q\n", i, b, d.Eval(), strDecomposition)
 
 		// if decomposition is zero, stop
 		if d.IsZero() {

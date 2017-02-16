@@ -195,8 +195,10 @@ func (d Decomposition) String() string {
 }
 
 // LaTeX is similar to String but it returns a valid LaTeX command.
+// Special charachters are not escaped so it must not be formatted with the %s verb.
+// Instead, the %q one must be used.
 func (d Decomposition) LaTeX() string {
-	return d.string("\\times", "{", "}")
+	return d.string("\times", "{", "}")
 }
 
 // Eval computes and returns the value of the decomposition.
