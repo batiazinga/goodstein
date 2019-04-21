@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func ExampleString() {
+func Example() {
 	// decomposition of 0 (in any base)
 	d0, _ := New(2, 0)
 	fmt.Println(d0.String())
@@ -30,7 +30,7 @@ func ExampleString() {
 	// 3 ^ (2) + 1
 }
 
-func ExampleLaTeX() {
+func ExampleDecomposition_LaTeX() {
 	// decomposition of 0 (in any base)
 	d0, _ := New(2, 0)
 	fmt.Println(d0.LaTeX())
@@ -57,37 +57,37 @@ func ExampleLaTeX() {
 // unit tests for monomes
 
 type goldenMonome struct {
-	m             *monome
+	m             monome
 	isZero, isOne bool
 	value         *big.Int
 }
 
 var goldenMonomes = []goldenMonome{
 	{
-		m: &monome{
+		m: monome{
 			coeff:    0,
 			base:     2,
-			exponent: nil,
+			exponent: Decomposition{},
 		},
 		isZero: true,
 		isOne:  false,
 		value:  big.NewInt(0),
 	},
 	{
-		m: &monome{
+		m: monome{
 			coeff:    1,
 			base:     2,
-			exponent: nil,
+			exponent: Decomposition{},
 		},
 		isZero: false,
 		isOne:  true,
 		value:  big.NewInt(1),
 	},
 	{
-		m: &monome{
+		m: monome{
 			coeff:    2,
 			base:     3,
-			exponent: nil,
+			exponent: Decomposition{},
 		},
 		isZero: false,
 		isOne:  false,

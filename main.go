@@ -77,6 +77,6 @@ func main() {
 
 		// increment base and remove one
 		b++ // for reporting only
-		d = decomposition.Decrement(decomposition.IncrementBase(d))
+		d = d.IncrementBase().Decrement()
 	}
 }
